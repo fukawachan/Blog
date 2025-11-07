@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Literal, Optional
+from typing import Dict, Literal
 
 from pydantic import BaseModel, Field
 
@@ -11,12 +11,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    model: str = Field(..., min_length=1)
     messages: list[ChatMessage] = Field(..., min_length=1)
-    stream: bool = False
-    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
-    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
-    max_tokens: Optional[int] = Field(default=None, gt=0)
 
     def dict_compat(self) -> Dict:
         try:
