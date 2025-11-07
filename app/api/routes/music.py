@@ -32,8 +32,8 @@ def get_music_info(
         id=music.id,
         title=music.title,
         artist=music.artist,
-        music_url=request.url_for("get_music_file", music_id=music.id),
-        thumbnail_url=request.url_for("get_music_thumbnail", music_id=music.id),
+        music_url=str(request.url_for("get_music_file", music_id=music.id)),
+        thumbnail_url=str(request.url_for("get_music_thumbnail", music_id=music.id)),
     )
 
 
