@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.schemas import ChatRequest
-from app.services.chat_proxy import forward_chat_request
+from app.services.chat import forward_chat_request
 
 router = APIRouter(prefix="/api", tags=["chat"])
 

@@ -8,7 +8,6 @@ from fastapi import HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from app.config import GLM_API_KEY, GLM_API_URL, HTTP_TIMEOUT
-from app.utils.http import proxy_config
 
 
 def _raise_upstream_error(status_code: int, raw_body: bytes) -> None:
@@ -39,7 +38,6 @@ async def forward_chat_request(payload: Dict, stream: bool):
     client_args = {
         "headers": headers,
         "timeout": httpx.Timeout(HTTP_TIMEOUT),
-        "proxies": proxy_config(),
     }
 
     if stream:
