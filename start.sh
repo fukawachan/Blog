@@ -88,12 +88,26 @@ install_dependencies() {
     echo -e "${YELLOW}Installing dependencies from requirements.txt${NC}"
 
     if [ -f "requirements.txt" ]; then
+        # Check if requirements.txt is readable (not corrupted encoding)
+        if ! head -1 requirements.txt >/dev/null 2>&1; then
+            echo -e "${RED}Error: requirements.txt has encoding issues and cannot be read${NC}"
+            echo "Please fix the encoding of requirements.txt file"
+            exit 1
+        fi
+
         # Upgrade pip first
+        echo -e "${BLUE}Upgrading pip...${NC}"
         pip install --upgrade pip
 
-        # Install dependencies
-        pip install -r requirements.txt
-        echo -e "${GREEN}✓ Dependencies installed${NC}"
+        # Install dependencies with error handling
+        echo -e "${BLUE}Installing dependencies...${NC}"
+        if pip install -r requirements.txt; then
+            echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
+        else
+            echo -e "${RED}Error: Failed to install dependencies${NC}"
+            echo "Please check your internet connection and requirements.txt file"
+            exit 1
+        fi
     else
         echo -e "${RED}Warning: requirements.txt not found${NC}"
         echo "Continuing without installing dependencies..."
