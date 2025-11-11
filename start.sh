@@ -124,6 +124,57 @@ check_main_file() {
     echo -e "${GREEN}✓ Main file $PYTHON_FILE found${NC}"
 }
 
+# Function to verify dependencies are installed
+verify_dependencies() {
+    echo -e "${YELLOW}Verifying critical dependencies...${NC}"
+
+    local critical_deps=("fastapi" "uvicorn" "pydantic")
+    local missing_deps=()
+
+    for dep in "${critical_deps[@]}"; do
+        if ! python -c "import $dep" 2>/dev/null; then
+            missing_deps+=("$dep")
+        fi
+    done
+
+    if [ ${#missing_deps[@]} -gt 0 ]; then
+        echo -e "${RED}Error: Missing critical dependencies: ${missing_deps[*]}${NC}"
+        echo "Please install dependencies first with: pip install -r requirements.txt"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓ All critical dependencies verified${NC}"
+}
+
+# Function to test import of main application
+test_imports() {
+    echo -e "${YELLOW}Testing application imports...${NC}"
+
+    # Extract module name without .py extension
+    local module_name="${PYTHON_FILE%.*}"
+
+    if python -c "from $module_name import app; print('✓ Main application imported successfully')" 2>/dev/null; then
+        echo -e "${GREEN}✓ Application imports test passed${NC}"
+    else
+        echo -e "${RED}Error: Failed to import main application${NC}"
+        echo "Attempting to debug import issue..."
+
+        # Try to show more detailed error information
+        python -c "
+try:
+    from $module_name import app
+    print('✓ Import successful')
+except ImportError as e:
+    print(f'ImportError: {e}')
+except Exception as e:
+    print(f'Other error: {e}')
+" 2>&1 || true
+
+        echo "Please check if all dependencies are installed and the application structure is correct"
+        exit 1
+    fi
+}
+
 # Function to start FastAPI service
 start_fastapi() {
     echo -e "${YELLOW}Starting FastAPI service...${NC}"
@@ -132,8 +183,17 @@ start_fastapi() {
     echo -e "${YELLOW}Press Ctrl+C to stop the server${NC}"
     echo
 
+    # Set PYTHONPATH to ensure proper module resolution
+    export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+
     # Start the FastAPI application
-    python -m uvicorn "$PYTHON_FILE:app" --host "$HOST" --port "$PORT" --reload
+    if python -m uvicorn "${PYTHON_FILE%.*}:app" --host "$HOST" --port "$PORT" --reload; then
+        echo -e "${GREEN}✓ FastAPI service started successfully${NC}"
+    else
+        echo -e "${RED}Error: Failed to start FastAPI service${NC}"
+        echo "Please check the error messages above for details"
+        exit 1
+    fi
 }
 
 # Main execution
@@ -147,7 +207,9 @@ main() {
     create_conda_env
     activate_conda_env
     install_dependencies
+    verify_dependencies
     check_main_file
+    test_imports
 
     echo
     echo -e "${GREEN}=== Setup completed successfully! ===${NC}"
