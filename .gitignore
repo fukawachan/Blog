@@ -4,3 +4,4 @@ __pycache__/
 /.claude
 .env
 /music
+music_library.db
