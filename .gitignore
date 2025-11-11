@@ -5,3 +5,4 @@ __pycache__/
 .env
 /music
 music_library.db
+.DS_Store
